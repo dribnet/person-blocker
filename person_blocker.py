@@ -1,3 +1,7 @@
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+
 import os
 import sys
 import argparse
@@ -19,7 +23,8 @@ def create_noisy_color(image, color):
     color_mask = np.full(shape=(image.shape[0], image.shape[1], 3),
                          fill_value=color)
 
-    noise = np.random.normal(0, 25, (image.shape[0], image.shape[1]))
+    noise = np.zeros((image.shape[0], image.shape[1]))
+    # noise = np.random.normal(0, 25, (image.shape[0], image.shape[1]))
     noise = np.repeat(np.expand_dims(noise, axis=2), repeats=3, axis=2)
     mask_noise = np.clip(color_mask + noise, 0., 255.)
     return mask_noise
