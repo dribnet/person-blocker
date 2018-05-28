@@ -1,0 +1,3 @@
+#!/usr/local/bin/bash
+/usr/local/anaconda/anaconda/envs/scratch3/bin/python \
+  /Users/tom/vuw/projects/person-blocker/mask.py $*

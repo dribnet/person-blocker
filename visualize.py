@@ -75,7 +75,7 @@ def apply_mask(image, mask, color, alpha=0.5):
 
 def display_instances(image, boxes, masks, class_ids, class_names,
                       scores=None, title="",
-                      figsize=(16, 16), ax=None):
+                      figsize=(16, 16), ax=None, outfile='person_blocked_labels.png'):
     """
     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
     masks: [height, width, num_instances]
@@ -123,6 +123,7 @@ def display_instances(image, boxes, masks, class_ids, class_names,
         score = scores[i] if scores is not None else None
         label = class_names[class_id]
         x = random.randint(x1, (x1 + x2) // 2)
+        print("{} {}".format(label, score))
         caption = "{} {}".format(label, score) if score else label
         ax.text(x1, y1 + 8, caption,
                 color='w', size=11, backgroundcolor="none")
@@ -145,7 +146,7 @@ def display_instances(image, boxes, masks, class_ids, class_names,
 
     ax.imshow(masked_image.astype(np.uint8))
     #plt.show()
-    plt.savefig('person_blocked_labels.png', bbox_inches='tight')
+    plt.savefig(outfile, bbox_inches='tight')
     
 
 def draw_rois(image, rois, refined_rois, mask, class_ids, class_names, limit=10):
