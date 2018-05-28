@@ -89,23 +89,24 @@ def person_blocker(args):
                                     get_class_names(), position_ids, outfile=outfile)
         sys.exit()
 
-    # Filter masks to only the selected objects
-    objects = np.array(args.objects)
-
     # Object IDs:
-    if np.all(np.chararray.isnumeric(objects)):
-        object_indices = objects.astype(int)
-    # Types of objects:
-    else:
-        selected_class_ids = np.flatnonzero(np.in1d(get_class_names(),
-                                                    objects))
-        object_indices = np.flatnonzero(
-            np.in1d(r['class_ids'], selected_class_ids))
+    indices_list = []
+    objects_list = list(args.objects.split(","))
+    for objects_entry in objects_list:
+        if np.chararray.isnumeric(objects_entry):
+            indices_list += [objects_entry]
+
+        else:
+            selected_class_ids = np.flatnonzero(np.in1d(get_class_names(),
+                                                        [objects_entry]))
+            indices_list += np.flatnonzero(
+                np.in1d(r['class_ids'], selected_class_ids)).tolist()
+    object_indices = np.asarray(indices_list).astype(int)
 
     mask_selected = np.sum(r['masks'][:, :, object_indices], axis=2)
 
     # Replace object masks with noise
-    mask_color = string_to_rgb_triplet(args.color)
+    mask_colors = list(map(string_to_rgb_triplet,args.colors.split(",")))
     if args.bgcolor.lower() != "none":
         bg_color = string_to_rgb_triplet(args.bgcolor)
         image_masked = np.full(shape=(image.shape[0], image.shape[1], 3),
@@ -113,7 +114,7 @@ def person_blocker(args):
     else:
         image_masked = image.copy()
 
-    noisy_color = create_noisy_color(image, mask_color)
+    noisy_color = create_noisy_color(image, mask_colors[0])
     image_masked[mask_selected > 0] = noisy_color[mask_selected > 0]
 
     outfile = os.path.join(dirname, "mask_{}.png".format(barename))
@@ -129,11 +130,11 @@ if __name__ == '__main__':
         '-m', '--model',  help='path to COCO model', default=None)
 
     parser.add_argument('-c',
-                        '--color', default='(255, 255, 255)',
-                        help='color of the "block"')
+                        '--colors', default='#ffffff',
+                        help='colors of the masks')
 
     parser.add_argument('-b',
-                        '--bgcolor', default='(0, 0, 0)',
+                        '--bgcolor', default='#000000',
                         help='background color')
 
     parser.add_argument('infile', nargs='?', type=str,
@@ -141,7 +142,7 @@ if __name__ == '__main__':
     parser.add_argument('objects', nargs='?', type=str,
                          default=None)
     parser.add_argument('max', nargs='?', type=int,
-                         default=None)
+                         default=None, help="maximum number of objects")
     # parser.add_argument('-i', '--image',  help='Image file name.',
     #                     required=False)
     # parser.add_argument('-o',
